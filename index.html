@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <title>ufo sightings</title>
+  </head>
+  <body style="margin:40px;">
+    <h1 style="text-align: center; padding:20px;">UFO Sightings</h1>
+    <div>
+      <h2>Which months have the most UFO sightings?</h2>
+      <div id="monthly"></div>
+    </div>
+
+    <div>
+      <h2>Which season has the most UFO sightings?</h2>
+      <div id="seasonally"></div>
+    </div>
+
+    <div>
+      <h2>Which colors are most often spotted in UFOs?</h2>
+      <div id="colors"></div>
+    </div>
+    <!------------ d3 ------------------------------------------------>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      const margin = { top: 30, right: 30, bottom: 70, left: 60 },
+        width = 1200 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+      const svg1 = d3
+        .select("#monthly")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      const svg2 = d3
+        .select("#seasonally")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      const svg3 = d3
+        .select("#colors")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // -------------- MONTH LOOP --------------------- //
+      d3.csv("monthly.csv").then((data) => {
+        // x scale
+        const x = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(
+            data.map(function (d) {
+              return d.month;
+            })
+          )
+          .padding(0.2);
+        svg1
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          // .selectAll("text")
+          .attr("font-size", "17px");
+
+        // y scale
+        const y = d3.scaleLinear().domain([0, 11000]).range([height, 0]);
+        svg1.append("g").call(d3.axisLeft(y));
+
+        // bar
+        svg1
+          .selectAll("bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) {
+            return x(d.month);
+          })
+          .attr("y", function (d) {
+            return y(d.count);
+          })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) {
+            return height - y(d.count);
+          })
+          .attr("fill", "#69b3a2");
+      });
+
+      // -------------- SEASON LOOP --------------------- //
+      d3.csv("seasonal.csv").then((data) => {
+        // x scale
+        const x = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(
+            data.map(function (d) {
+              return d.season;
+            })
+          )
+          .padding(0.2);
+        svg2
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          // .selectAll("text")
+          .attr("font-size", "17px");
+
+        // y scale
+        const y = d3.scaleLinear().domain([0, 33000]).range([height, 0]);
+        svg2.append("g").call(d3.axisLeft(y));
+
+        // bar
+        svg2
+          .selectAll("bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) {
+            return x(d.season);
+          })
+          .attr("y", function (d) {
+            return y(d.count);
+          })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) {
+            return height - y(d.count);
+          })
+          .attr("fill", "#69b3a2");
+      });
+
+      // -------------- COLOR LOOP --------------------- //
+      d3.csv("color-mentions.csv").then((data) => {
+        const colors = [
+          "indianred",
+          "orange",
+          "gold",
+          "lightgreen",
+          "lightblue",
+          "purple",
+          "antiquewhite",
+          "black",
+          "gray",
+        ];
+        // color scale
+        const colorScale = d3
+          .scaleQuantize()
+          .domain([0, data.length])
+          .range(colors);
+
+        // x scale
+        const x = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(
+            data.map(function (d) {
+              return d.color;
+            })
+          )
+          .padding(0.2);
+        svg3
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          // .selectAll("text")
+          .attr("font-size", "17px");
+
+        // y scale
+        const y = d3.scaleLinear().domain([0, 16000]).range([height, 0]);
+        svg3.append("g").call(d3.axisLeft(y));
+
+        // bar
+        svg3
+          .selectAll("bar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) {
+            return x(d.color);
+          })
+          .attr("y", function (d) {
+            return y(d.count);
+          })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) {
+            return height - y(d.count);
+          })
+          .attr("fill", (d, i) => colorScale(i)); // Use the color scale
+      });
+    </script>
+  </body>
+</html>
